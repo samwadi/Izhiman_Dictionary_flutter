@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'add_word.dart';
 
 class MyTablePage extends StatefulWidget {
-  const MyTablePage({super.key});
+  const MyTablePage({Key? key}) : super(key: key);
 
   @override
   _MyTablePageState createState() => _MyTablePageState();
@@ -28,14 +28,13 @@ class _MyTablePageState extends State<MyTablePage> {
       appBar: AppBar(
         title: const Text('Word Table'),
         backgroundColor: Colors.deepOrange,
-
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const MyHomePage(title: 'Add Word',)),
+                MaterialPageRoute(builder: (context) => const AddWordPage()),
               );
             },
           ),
@@ -43,20 +42,19 @@ class _MyTablePageState extends State<MyTablePage> {
       ),
       body: Column(
         children: [
-
-            Padding(
-              padding: const EdgeInsets.all(2.0),
-              child: TextField(
-                controller: _searchController,
-                onChanged: (value) {
-                  setState(() {});
-                },
-                decoration: const InputDecoration(
-                  labelText: 'Search',
-                  border: OutlineInputBorder(),
-                ),
+          Padding(
+            padding: const EdgeInsets.all(2.0),
+            child: TextField(
+              controller: _searchController,
+              onChanged: (value) {
+                setState(() {});
+              },
+              decoration: const InputDecoration(
+                labelText: 'Search',
+                border: OutlineInputBorder(),
               ),
             ),
+          ),
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: _stream,
@@ -87,36 +85,73 @@ class _MyTablePageState extends State<MyTablePage> {
                               .contains(searchQuery)));
                 }).toList();
 
-                return Expanded(
-                    child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: DataTable(
-                          columns: const [
-                            DataColumn(label: Text('Arabic Word')),
-                            DataColumn(label: Text('English Word')),
-                            DataColumn(label: Text('Description')),
-                            DataColumn(label: Text('Tags')),
-                          ],
-                          rows: filteredDocuments.map((doc) {
-                            final Map<String, dynamic>? data =
-                                doc.data() as Map<String, dynamic>?;
-                            final String arabicWord = data?['arabicWord'] ?? '';
-                            final String englishWord =
-                                data?['englishWord'] ?? '';
-                            final String description =
-                                data?['description'] ?? '';
-                            final List<dynamic>? tags = data?['tags'];
+                return SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: DataTable(
+                    columns: const [
+                      DataColumn(label: Text('Arabic Word')),
+                      DataColumn(label: Text('English Word')),
+                      DataColumn(label: Text('Description')),
+                      DataColumn(label: Text('Tags')),
+                      DataColumn(
+                          label:
+                              Text('Delete')), // New column for delete button
+                    ],
+                    rows: filteredDocuments.map((doc) {
+                      final Map<String, dynamic>? data =
+                          doc.data() as Map<String, dynamic>?;
+                      final String arabicWord = data?['arabicWord'] ?? '';
+                      final String englishWord = data?['englishWord'] ?? '';
+                      final String description = data?['description'] ?? '';
+                      final List<dynamic>? tags = data?['tags'];
 
-                            return DataRow(
-                              cells: [
-                                DataCell(Text(arabicWord)),
-                                DataCell(Text(englishWord)),
-                                DataCell(Text(description)),
-                                DataCell(Text(tags?.join(', ') ?? '')),
-                              ],
-                            );
-                          }).toList(),
-                        )));
+                      return DataRow(
+                        cells: [
+                          DataCell(Text(arabicWord)),
+                          DataCell(Text(englishWord)),
+                          DataCell(Text(description)),
+                          DataCell(Text(tags?.join(', ') ?? '')),
+                          DataCell(
+                            IconButton(
+                                icon: Icon(Icons.delete, color: Colors.red),
+                                onPressed: () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return AlertDialog(
+                                        title: Text('Delete Word'),
+                                        content: const Text(
+                                            'Are you sure you want to delete this word?'),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () {
+                                              Navigator.pop(context);
+                                            },
+                                            child: Text('Cancel'),
+                                          ),
+                                          TextButton(
+                                            onPressed: () {
+                                              doc.reference.delete();
+                                              Navigator.pop(context);
+                                            },
+                                            child: const Text(
+                                              'Delete',
+                                              style: TextStyle(
+                                                color: Colors.red,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  );
+                                }),
+                          ),
+                        ],
+                      );
+                    }).toList(),
+                  ),
+                );
               },
             ),
           ),
