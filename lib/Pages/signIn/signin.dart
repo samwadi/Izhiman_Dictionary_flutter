@@ -21,7 +21,7 @@ class SignInPage extends StatelessWidget {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-            builder: (context) => const MyHomePage(title: 'Sign In')),
+            builder: (context) => const MyHomePage(title: 'Izhiman Dictionary')),
       );
     } catch (e) {
       print('Failed to sign in: $e');

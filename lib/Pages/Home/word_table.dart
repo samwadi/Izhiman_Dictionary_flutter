@@ -28,16 +28,8 @@ class _MyTablePageState extends State<MyTablePage> {
       appBar: AppBar(
         title: const Text('Word Table'),
         backgroundColor: Colors.deepOrange,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const AddWordPage()),
-              );
-            },
-          ),
+        actions: const [
+
         ],
       ),
       body: Column(
