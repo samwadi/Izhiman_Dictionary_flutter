@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart'; // Import FirebaseAuth
 import 'package:firebase_database/firebase_database.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:izhiman_dictionary/Pages/Home/word_table.dart';
+import 'package:izhiman_dictionary/Pages/signIn/signin.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key, required this.title}) : super(key: key);
@@ -76,6 +77,12 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text(widget.title),
         backgroundColor: Colors.red,
+        actions: [
+          IconButton(
+            onPressed: _signOut,
+            icon: Icon(Icons.logout),
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -84,26 +91,27 @@ class _MyHomePageState extends State<MyHomePage> {
           children: <Widget>[
             const Text('Arabic Word:', style: TextStyle(fontSize: 16)),
             TextFormField(
-                controller: _arabicController,
-                decoration:
-                const InputDecoration(hintText: 'Enter Arabic Word')),
+              controller: _arabicController,
+              decoration: const InputDecoration(hintText: 'Enter Arabic Word'),
+            ),
             const SizedBox(height: 20),
             const Text('English Word:', style: TextStyle(fontSize: 16)),
             TextFormField(
-                controller: _englishController,
-                decoration:
-                const InputDecoration(hintText: 'Enter English Word')),
+              controller: _englishController,
+              decoration: const InputDecoration(hintText: 'Enter English Word'),
+            ),
             const SizedBox(height: 20),
             const Text('Description:', style: TextStyle(fontSize: 16)),
             TextFormField(
-                controller: _descriptionController,
-                decoration:
-                const InputDecoration(hintText: 'Enter Description')),
+              controller: _descriptionController,
+              decoration: const InputDecoration(hintText: 'Enter Description'),
+            ),
             const SizedBox(height: 20),
             const Text('Tags:', style: TextStyle(fontSize: 16)),
             TextFormField(
-                controller: _tagsController,
-                decoration: const InputDecoration(hintText: 'Enter Tags')),
+              controller: _tagsController,
+              decoration: const InputDecoration(hintText: 'Enter Tags'),
+            ),
             const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -134,5 +142,14 @@ class _MyHomePageState extends State<MyHomePage> {
     _descriptionController.dispose();
     _tagsController.dispose();
     super.dispose();
+  }
+
+  void _signOut() async {
+    await FirebaseAuth.instance.signOut();
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+          builder: (context) =>  SignInPage()),
+    );// Assuming '/sign_in' is the route for sign-in page
   }
 }

@@ -41,7 +41,6 @@ class _MyTablePageState extends State<MyTablePage> {
       appBar: AppBar(
         title: const Text('Word Table'),
         backgroundColor: Colors.deepOrange,
-
       ),
       body: Column(
         children: [
@@ -96,9 +95,8 @@ class _MyTablePageState extends State<MyTablePage> {
                       DataColumn(label: Text('English Word')),
                       DataColumn(label: Text('Description')),
                       DataColumn(label: Text('Tags')),
-                      DataColumn(
-                          label:
-                          Text('Delete')), // New column for delete button
+                      DataColumn(label: Text('Edit')), // Edit button
+                      DataColumn(label: Text('Delete')), // Delete button
                     ],
                     rows: filteredDocuments.map((doc) {
                       final Map<String, dynamic>? data =
@@ -114,42 +112,18 @@ class _MyTablePageState extends State<MyTablePage> {
                           DataCell(Text(englishWord)),
                           DataCell(Text(description)),
                           DataCell(Text(tags?.join(', ') ?? '')),
-                          DataCell(
-                            IconButton(
-                                icon: Icon(Icons.delete, color: Colors.red),
-                                onPressed: () {
-                                  showDialog(
-                                    context: context,
-                                    builder: (BuildContext context) {
-                                      return AlertDialog(
-                                        title: Text('Delete Word'),
-                                        content: const Text(
-                                            'Are you sure you want to delete this word?'),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () {
-                                              Navigator.pop(context);
-                                            },
-                                            child: Text('Cancel'),
-                                          ),
-                                          TextButton(
-                                            onPressed: () {
-                                              doc.reference.delete();
-                                              Navigator.pop(context);
-                                            },
-                                            child: const Text(
-                                              'Delete',
-                                              style: TextStyle(
-                                                color: Colors.red,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      );
-                                    },
-                                  );
-                                }),
-                          ),
+                          DataCell(IconButton(
+                            icon: Icon(Icons.edit, color: Colors.blue),
+                            onPressed: () {
+                              _editWord(doc);
+                            },
+                          )),
+                          DataCell(IconButton(
+                            icon: Icon(Icons.delete, color: Colors.red),
+                            onPressed: () {
+                              _deleteWord(doc);
+                            },
+                          )),
                         ],
                       );
                     }).toList(),
@@ -160,6 +134,110 @@ class _MyTablePageState extends State<MyTablePage> {
           ),
         ],
       ),
+    );
+  }
+
+  void _editWord(DocumentSnapshot doc) {
+    TextEditingController arabicController = TextEditingController();
+    TextEditingController englishController = TextEditingController();
+    TextEditingController descriptionController = TextEditingController();
+    TextEditingController tagsController = TextEditingController(
+      text: (doc.data() as Map<String, dynamic>?)?['tags']?.join(', ') ?? '',
+    );
+
+    arabicController.text = (doc.data() as Map<String, dynamic>?)?['arabicWord'] ?? '';
+    englishController.text = (doc.data() as Map<String, dynamic>?)?['englishWord'] ?? '';
+    descriptionController.text = (doc.data() as Map<String, dynamic>?)?['description'] ?? '';
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Edit Word'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: arabicController,
+                decoration: InputDecoration(labelText: 'Arabic Word'),
+              ),
+              TextFormField(
+                controller: englishController,
+                decoration: InputDecoration(labelText: 'English Word'),
+              ),
+              TextFormField(
+                controller: descriptionController,
+                decoration: InputDecoration(labelText: 'Description'),
+              ),
+              TextFormField(
+                controller: tagsController,
+                decoration: InputDecoration(labelText: 'Tags'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                final Map<String, dynamic> newData = {
+                  'arabicWord': arabicController.text,
+                  'englishWord': englishController.text,
+                  'description': descriptionController.text,
+                  'tags': tagsController.text.split(',').map((e) => e.trim()).toList(),
+                };
+
+                await doc.reference.update(newData);
+                Navigator.pop(context);
+              },
+              child: Text(
+                'Save',
+                style: TextStyle(
+                  color: Colors.blue,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
+
+  void _deleteWord(DocumentSnapshot doc) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Delete Word'),
+          content: const Text('Are you sure you want to delete this word?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                doc.reference.delete();
+                Navigator.pop(context);
+              },
+              child: const Text(
+                'Delete',
+                style: TextStyle(
+                  color: Colors.red,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
