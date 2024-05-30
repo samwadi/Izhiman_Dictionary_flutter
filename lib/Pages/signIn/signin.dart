@@ -18,6 +18,7 @@ class SignInPage extends StatelessWidget {
       );
       print('User signed in: ${userCredential.user}');
       // Navigate to the main page after successful sign-in
+      String email1=emailController.text;
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(

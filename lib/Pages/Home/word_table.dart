@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import 'add_word.dart';
 
@@ -13,14 +14,26 @@ class MyTablePage extends StatefulWidget {
 class _MyTablePageState extends State<MyTablePage> {
   final TextEditingController _searchController = TextEditingController();
   late Stream<QuerySnapshot> _stream;
-
-  Pattern get searchQuery => _searchController.text;
+  late String _userEmail;
 
   @override
   void initState() {
     super.initState();
-    _stream = FirebaseFirestore.instance.collection('words').snapshots();
+    _getUserEmail();
   }
+
+  Future<void> _getUserEmail() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    setState(() {
+      _userEmail = user!.email!;
+      _stream = FirebaseFirestore.instance
+          .collection('words')
+          .where('userEmail', isEqualTo: _userEmail) // Filter by userEmail
+          .snapshots();
+    });
+  }
+
+  Pattern get searchQuery => _searchController.text;
 
   @override
   Widget build(BuildContext context) {
@@ -28,9 +41,7 @@ class _MyTablePageState extends State<MyTablePage> {
       appBar: AppBar(
         title: const Text('Word Table'),
         backgroundColor: Colors.deepOrange,
-        actions: const [
 
-        ],
       ),
       body: Column(
         children: [
@@ -59,9 +70,9 @@ class _MyTablePageState extends State<MyTablePage> {
 
                 final List<DocumentSnapshot> documents = snapshot.data!.docs;
                 List<DocumentSnapshot> filteredDocuments =
-                    documents.where((doc) {
+                documents.where((doc) {
                   final Map<String, dynamic>? data =
-                      doc.data() as Map<String, dynamic>?;
+                  doc.data() as Map<String, dynamic>?;
                   final String arabicWord = data?['arabicWord'] ?? '';
                   final String englishWord = data?['englishWord'] ?? '';
                   final String description = data?['description'] ?? '';
@@ -87,11 +98,11 @@ class _MyTablePageState extends State<MyTablePage> {
                       DataColumn(label: Text('Tags')),
                       DataColumn(
                           label:
-                              Text('Delete')), // New column for delete button
+                          Text('Delete')), // New column for delete button
                     ],
                     rows: filteredDocuments.map((doc) {
                       final Map<String, dynamic>? data =
-                          doc.data() as Map<String, dynamic>?;
+                      doc.data() as Map<String, dynamic>?;
                       final String arabicWord = data?['arabicWord'] ?? '';
                       final String englishWord = data?['englishWord'] ?? '';
                       final String description = data?['description'] ?? '';
